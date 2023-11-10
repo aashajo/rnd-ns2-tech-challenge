@@ -1,104 +1,113 @@
-<script lang="ts">
-    import Users from './lib/Users.svelte';
+<script>
+  import { onMount } from 'svelte';
+  import { request, gql } from 'graphql-request';
 
-    const users = [
-    {
-                    "id": 1,
-                    "username": "User1",
-                    "companies": [
-                        {
-                            "id": 10,
-                            "name": "Company 10"
-                        },
-                        {
-                            "id": 18,
-                            "name": "Company 18"
-                        },
-                        {
-                            "id": 32,
-                            "name": "Company 32"
-                        },
-                        {
-                            "id": 34,
-                            "name": "Company 34"
-                        },
-                        {
-                            "id": 69,
-                            "name": "Company 69"
-                        }
-                    ]
-                },
-                {
-                    "id": 2,
-                    "username": "User2",
-                    "companies": [
-                        {
-                            "id": 3,
-                            "name": "Company 3"
-                        },
-                        {
-                            "id": 45,
-                            "name": "Company 45"
-                        },
-                        {
-                            "id": 59,
-                            "name": "Company 59"
-                        },
-                        {
-                            "id": 71,
-                            "name": "Company 71"
-                        }
-                    ]
-                },
-                {
-                    "id": 3,
-                    "username": "User3",
-                    "companies": [
-                        {
-                            "id": 10,
-                            "name": "Company 10"
-                        },
-                        {
-                            "id": 53,
-                            "name": "Company 53"
-                        },
-                        {
-                            "id": 56,
-                            "name": "Company 56"
-                        },
-                        {
-                            "id": 84,
-                            "name": "Company 84"
-                        },
-                        {
-                            "id": 94,
-                            "name": "Company 94"
-                        }
-                    ]
-                }
-];
+  let users = [];
+  let pagination = {
+    totalOfPage: 0,
+    page: 0,
+    totalOfRecord: 0,
+    pageSize: 0,
+  };
 
+  let username = '';
+  let loading = false;
+
+  const getUsers = async (page, pageSize) => {
+    try {
+      loading = true;
+      const query = gql`
+        query GetUsers($page: Int, $pageSize: Int) {
+          Users(page: $page, pageSize: $pageSize) {
+            data {
+              id
+              username
+            }
+            meta {
+              pagination {
+                totalOfPage
+                page
+                totalOfRecord
+                pageSize
+              }
+            }
+          }
+        }
+      `;
+
+      const variables = { page, pageSize };
+      const data = await request('http://localhost:4000/graphql', query, variables);
+      users = data.Users.data;
+      pagination = data.Users.meta.pagination;
+      loading = false;
+    } catch (error) {
+      loading = false;
+    }
+  };
+
+  const createUser = async () => {
+    const mutation = gql`
+      mutation CreateUser($username: String!) {
+        createUser(username: $username) {
+          id
+          username
+        }
+      }
+    `;
+
+    try {
+      const data = await request('http://localhost:4000/graphql', mutation, { username });
+      getUsers(pagination.page, pagination.pageSize);
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+  };
+
+  const displayPagination = () => {
+    const { totalOfPage } = pagination;
+
+    let paginationButtons = [];
+    for (let i = 1; i <= totalOfPage; i++) {
+      paginationButtons.push({
+        pageNumber: i,
+        button: i,
+      });
+    }
+
+    return paginationButtons;
+  };
+
+  onMount(() => {
+    getUsers(1, 10);
+  });
 </script>
 
-<main>
-  <h1>Harvest Tech Challenge</h1>
-  <Users {users} />
-</main>
+<h2>User List</h2>
 
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style>
+{#if loading}
+  <p>Loading...</p>
+{:else if users.length > 0}
+  <ul>
+    {#each users as user}
+      <li>User ID: {user.id}, Username: {user.username}</li>
+    {/each}
+  </ul>
+{:else}
+  <p>No users available</p>
+{/if}
+
+<div>
+  <p>
+    Page {pagination.page} of {pagination.totalOfPage}, {pagination.totalOfRecord}{' '}
+    users in total
+  </p>
+  {#each displayPagination() as { pageNumber, button }}
+    <button on:click={() => getUsers(pageNumber, pagination.pageSize)}>{button}</button>
+  {/each}
+</div>
+
+<div>
+  <label for="username">Username:</label>
+  <input type="text" id="username" bind:value={username} />
+  <button on:click={createUser}>Create User</button>
+</div>

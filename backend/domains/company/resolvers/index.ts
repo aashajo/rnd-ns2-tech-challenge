@@ -1,39 +1,39 @@
 import { CompanyService } from "../service";
+import DataLoader from "dataloader";
+
+const companyService = new CompanyService();
+
+const userLoader = new DataLoader(async (ids: readonly number[]) => {
+  return await companyService.getUsersByIds(ids);
+});
+
 export default {
   Query: {
     async Users(parent: any, args: any, context: any, info: any): Promise<any> {
-      const { filter } = args;      
-      const _companyService = new CompanyService();
-      const data = await _companyService.getUsers(filter);
-      return { data };
-    },    
-    async Companies(parent: any, args: any, context: any, info: any): Promise<any> {
-      const { filter } = args;      
-      const _companyService = new CompanyService();
-      const data = await _companyService.getCompanies(filter);
-      return { data };
+      const { page, pageSize } = args;
+      const { data, totalOfRecord, totalOfPage } =
+        await companyService.getUsersWithPagination(page, pageSize);
+      return {
+        data,
+        meta: { pagination: { totalOfRecord, page, pageSize, totalOfPage } },
+      };
     },
-    async Rooms(parent: any, args: any, context: any, info: any): Promise<any> {
-      const { filter } = args;      
-      const _companyService = new CompanyService();
-      const data = await _companyService.getCompanyRooms(filter);
-      return { data };
-    },      
   },
-  CompanyType:{
-    async rooms(parent: any, args: any, context: any, info: any): Promise<any> {
-      const { id } = parent   
-      const _companyService = new CompanyService();
-      const data = await _companyService.getCompanyRooms({ companyId: id });
-      return data;
-    },          
+  Mutation: {
+    createUser: async (
+      _: any,
+      { username }: { username: string },
+      context: any,
+      info: any
+    ) => {
+      const newUser = await companyService.createUser(username);
+      return newUser;
+    },
   },
-  UserType:{
-    async companies(parent: any, args: any, context: any, info: any): Promise<any> {
-      const { companyIds } = parent   
-      const _companyService = new CompanyService();
-      const data = await _companyService.getUserCompanies({ companyIds });
-      return data;
-    },          
-  }  
+  UserType: {
+    companies: async (parent: any, args: any, context: any, info: any) => {
+      const companyIds = parent.companies.map((company: any) => company.id);
+      return userLoader.loadMany(companyIds);
+    },
+  },
 };

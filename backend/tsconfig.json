@@ -1,38 +1,38 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "baseUrl": "./",
-        "declaration": true,
-        "declarationDir": "./dist",
-        "downlevelIteration": true,
-        "emitDecoratorMetadata": true,
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
-        "lib": ["es2017"],
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "outDir": "./dist",
-        "resolveJsonModule": true,
-        "skipLibCheck": true,
-        "sourceMap": true,
-        "strict": true,
-        "strictBindCallApply": false,
-        "strictFunctionTypes": false,
-        "strictPropertyInitialization": false,
-        "target": "es5",
-        "typeRoots": ["./typings"]
-    },
-    "exclude": ["node_modules", "dist"],
-    "include": [
-        "src/**/*.ts",
-        "typings/*.ts",
-        "*.ts",
-        "test/**/*.ts",
-        "node-server/**/*.ts",
-        "testServer/**/*.ts"
-    ],
-    "ts-node": {
-        "files": true
-    }
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "./",
+    "declaration": true,
+    "declarationDir": "./dist",
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2017"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictBindCallApply": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "target": "es5",
+    "typeRoots": ["./typings"]
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/**/*.ts",
+    "typings/*.ts",
+    "*.ts",
+    "test/**/*.ts",
+    "node-server/**/*.ts",
+    "testServer/**/*.ts"
+  ],
+  "ts-node": {
+    "files": true
+  }
 }
